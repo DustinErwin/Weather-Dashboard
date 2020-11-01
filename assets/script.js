@@ -2,7 +2,7 @@ let loN = 0;
 let laT = 0;
 let uvReturn;
 let call;
-let searchNum = 1 + localStorage.length
+let searchNum = 1 + localStorage.length;
 let months = [
   null,
   "January",
@@ -18,16 +18,17 @@ let months = [
   "Novemeber",
   "December",
 ];
-let queryCity = localStorage.getItem('mostRecent')
 
-let wthrTodayApi =
-  "https://api.openweathermap.org/data/2.5/forecast?q=" +
-  queryCity +
-  "&units=imperial&appid=b15fbded32e97830c7c19b58cb5acfd0";
-
-getAPI()
+getAPI();
 //Grabs API data
-function getAPI(){
+function getAPI() {
+  let queryCity = localStorage.getItem("mostRecent");
+
+  let wthrTodayApi =
+    "https://api.openweathermap.org/data/2.5/forecast?q=" +
+    queryCity +
+    "&units=imperial&appid=b15fbded32e97830c7c19b58cb5acfd0";
+
   $.ajax({
     url: wthrTodayApi,
     method: "GET",
@@ -37,76 +38,76 @@ function getAPI(){
     laT = call.city.coord.lat.toString(10);
     loN = call.city.coord.lon.toString(10);
 
-   mainInfo()
+    mainInfo();
 
     uvFind(laT, loN);
+  });
+}
 
-    
+//Creates the data to fill main info panel
+function mainInfo() {
+  name = call.city.name;
 
-  })};
+  dateIndex = call.list[0].dt_txt.substring(0, 11);
+  d = dateIndex.substring(8, 10);
+  m = dateIndex.substring(5, 7);
+  y = dateIndex.substring(0, 4);
+  day = daySuffix(parseInt(d));
+  month = monthName(parseInt(m));
+  date = `${month} ${day} ${y}`;
 
-  //Creates the data to fill main info panel
-  function mainInfo () {
-    name = call.city.name;
+  temp = parseInt(call.list[0].main.temp);
 
-    dateIndex = call.list[0].dt_txt.substring(0, 11);
+  humid = call.list[0].main.humidity;
+
+  wind = parseInt(call.list[0].wind.speed * 2.237);
+
+  let icon = new Image(40, 40);
+  icon.src =
+    "http://openweathermap.org/img/wn/" +
+    call.list[0].weather[0].icon +
+    "@2x.png";
+
+  weatherDesc = call.list[0].weather[0].main;
+  console.log(name);
+  mainTile(name, date, temp, humid, wind, icon, weatherDesc);
+
+  fillForecast();
+}
+
+function fillForecast() {
+  for (let i = 1; i <= 4; i++) {
+    dateIndex = call.list[i * 8].dt_txt.substring(0, 11);
     d = dateIndex.substring(8, 10);
     m = dateIndex.substring(5, 7);
-    y = dateIndex.substring(0, 4);
     day = daySuffix(parseInt(d));
     month = monthName(parseInt(m));
-    date = `${month} ${day} ${y}`;
+    date = `${month} ${day}`;
+    $("#date-" + i).text(date);
 
-    temp = parseInt(call.list[0].main.temp);
+    desc = call.list[i * 8].weather[0].main;
+    $("#sky-" + i).text(desc);
 
-    humid = call.list[0].main.humidity;
+    temp = parseInt(call.list[i * 8].main.temp);
+    $("#temp-" + i).text("Temp: " + temp + "°F");
 
-    wind = parseInt(call.list[0].wind.speed * 2.237);
-
-    let icon = new Image(40, 40);
-    icon.src =
-      "http://openweathermap.org/img/wn/" +
-      call.list[0].weather[0].icon +
-      "@2x.png";
-
-    weatherDesc = call.list[0].weather[0].main;
-    
-    fillForecast()
-     
-    mainTile(name, date, temp, humid, wind, icon, weatherDesc);
+    humid = call.list[i * 8].main.humidity;
+    $("#humid-" + i).text("Humidity: " + humid + "%");
   }
+}
 
-  function fillForecast() {
-    for (let i = 1;i <= 4;i++) {
-      dateIndex = call.list[i * 8].dt_txt.substring(0, 11);
-      d = dateIndex.substring(8, 10);
-      m = dateIndex.substring(5, 7);
-      day = daySuffix(parseInt(d));
-      month = monthName(parseInt(m));
-      date = `${month} ${day}`;
-      $("#date-" + i).text(date);
+popButtons();
 
-      desc = call.list[i *8].weather[0].main
-       $("#sky-" + i).text(desc);
+function popButtons() {
+  $(".history").empty();
+  for (let i = 1; i < localStorage.length - 1 && i <= 8; i++) {
+    rc = localStorage.getItem("city" + i);
 
-      temp = parseInt(call.list[i * 8].main.temp);
-            $("#temp-" + i).text("Temp: " + temp + "°F");
-
-      humid = call.list[i * 8].main.humidity;      
-      $("#humid-" + i).text("Humidity: " + humid + "%");
-    }}
-
-  popButtons()
-
- function popButtons(){
-  $('.history').empty()
-  for (let i = 1;i < localStorage.length&&i <= 9;i++){
-    rc = localStorage.getItem('city' + i)
-    
-    $('.history').append(`<button id="btn-${i}" onclick="reSearch(${i})" type='button' class="btn btn-danger histBtn">${rc}</button>`)
-  }}
- 
-
+    $(".history").append(
+      `<button id="btn-${i}" onclick="reSearch(${i})" type='button' class="btn btn-danger histBtn">${rc}</button>`
+    );
+  }
+}
 
 function uvFind(a, b) {
   let uvIndex =
@@ -127,7 +128,7 @@ function uvFind(a, b) {
     uvReturn = response.value.toString(10);
     uvText = $("#uvIndex");
     uvText.empty();
-   
+
     uvText.text(uvReturn);
   });
 }
@@ -145,8 +146,6 @@ function uvAlert(a) {
     $("#uvIndex").css("background-color", "#10f808");
   }
 }
-
-
 
 function daySuffix(a) {
   if (a === 1 || a === 21 || a === 31) {
@@ -189,28 +188,27 @@ function mainTile(a, b, c, d, e, f, g) {
 
   desc = $("#desc").empty();
   desc.text(g);
-  
-  
 }
 
 function storSearch(a, b) {
   localStorage.setItem(a + searchNum, b);
-  searchNum++
-  localStorage.setItem('mostRecent', b)
+  searchNum++;
+  localStorage.setItem("mostRecent", b);
 }
 
 function reSearch(e) {
-  reQuery = localStorage.getItem('city' + e)
- 
-  queryCity = reQuery
-  getAPI()
+  reQuery = localStorage.getItem("city" + e);
+
+  localStorage.setItem("mostRecent", reQuery);
+  getAPI();
+  mainInfo();
 }
 
-$("#btn-0").click(function(){
-  queryCity = $('#queryCity').val() 
-  if(queryCity){
-  getAPI()
-  storSearch('city', queryCity)
-  popButtons()
+$("#btn-0").click(function () {
+  queryCity = $("#queryCity").val();
+  if (queryCity) {
+    getAPI();
+    storSearch("city", queryCity);
+    popButtons();
   }
 });
