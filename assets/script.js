@@ -2,7 +2,7 @@ let loN = 0;
 let laT = 0;
 let uvReturn;
 let call;
-let searchNum = 1 + localStorage.length;
+let searchNum = localStorage.length;
 let months = [
   null,
   "January",
@@ -74,7 +74,7 @@ function mainInfo() {
 
   fillForecast();
 }
-
+ //Fills the forecast elements with data
 function fillForecast() {
   for (let i = 1; i <= 4; i++) {
     dateIndex = call.list[i * 8].dt_txt.substring(0, 11);
@@ -97,18 +97,21 @@ function fillForecast() {
 }
 
 popButtons();
-
+ 
+ //Creates past search buttons
 function popButtons() {
   $(".history").empty();
-  for (let i = 1; i < localStorage.length - 1 && i <= 8; i++) {
+  for (let i = 0; i <= localStorage.length - 1 && i <= 8; i++) {
     rc = localStorage.getItem("city" + i);
-
-    $(".history").append(
-      `<button id="btn-${i}" onclick="reSearch(${i})" type='button' class="btn btn-danger histBtn">${rc}</button>`
-    );
+    if (rc) {
+      $(".history").append(
+        `<button id="btn-${i}" onclick="reSearch(${i})" type='button' class="btn btn-danger histBtn">${rc}</button>`
+      );
+    }
   }
 }
 
+//Gets and fills UvIndex data
 function uvFind(a, b) {
   let uvIndex =
     "http://api.openweathermap.org/data/2.5/uvi?lat=" +
@@ -133,6 +136,7 @@ function uvFind(a, b) {
   });
 }
 
+//Adds color to signify UV danger levels
 function uvAlert(a) {
   if (a >= 3 && a <= 5) {
     $("#uvIndex").css("background-color", "yellow");
@@ -147,6 +151,7 @@ function uvAlert(a) {
   }
 }
 
+//Adds the proper suffix to day number
 function daySuffix(a) {
   if (a === 1 || a === 21 || a === 31) {
     let day = a.toString(10) + "st";
@@ -163,11 +168,13 @@ function daySuffix(a) {
   }
 }
 
+//Returns month name for number given
 function monthName(a) {
   let month = months[a];
   return month;
 }
 
+//Draws in all of the main panel info
 function mainTile(a, b, c, d, e, f, g) {
   cityHeader = $("#cityHeader").empty();
   cityHeader.text(a);
@@ -184,31 +191,32 @@ function mainTile(a, b, c, d, e, f, g) {
   wind = $("#wind").empty();
   wind.text(e);
 
-  $("#desc").append(f);
-
   desc = $("#desc").empty();
   desc.text(g);
-}
 
+  $("#desc").append(f);
+}
+ //Stores search locally and refreshes search info and past search buttons
 function storSearch(a, b) {
   localStorage.setItem(a + searchNum, b);
   searchNum++;
   localStorage.setItem("mostRecent", b);
+  getAPI();
+  popButtons();
 }
-
+ //Grabs past search and displays it also setting it to most recent search
 function reSearch(e) {
   reQuery = localStorage.getItem("city" + e);
 
   localStorage.setItem("mostRecent", reQuery);
   getAPI();
-  mainInfo();
 }
-
+ //Search button listener starts function and prevents null entry
 $("#btn-0").click(function () {
   queryCity = $("#queryCity").val();
   if (queryCity) {
-    getAPI();
     storSearch("city", queryCity);
-    popButtons();
+    $("#queryCity").empty();
   }
+  $("#queryCity").empty();
 });
